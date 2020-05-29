@@ -15,7 +15,8 @@ ii.  Depending upon its status, Initiate the Pause or Restart
 </ol>
 
 This requires a simple pipeline in Data Factory:
- 
+![](images/simple-pipeline1.png)
+
 Depending upon the nature of your environment, the whole process described here may not apply and you may just want to pick and choose the appropriate step. Typically the process described here would be used to Pause or Restart all instances in a Development, Test or PoC environment – where the number of instances could vary over time – whereas for a live environment you are more likely to schedule Pause/Restart on a instance by instance basis so will only need step 3.
 All of the steps above utilise the REST APIs for Synapse and Azure SQL:
 https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api
