@@ -20,41 +20,64 @@ This requires a simple pipeline in Data Factory:
 Depending upon the nature of your environment, the whole process described here may not apply and you may just want to pick and choose the appropriate step. Typically the process described here would be used to Pause or Restart all instances in a Development, Test or PoC environment – where the number of instances could vary over time – whereas for a live environment you are more likely to schedule Pause/Restart on a instance by instance basis so will only need step 3.
 
 All of the steps above utilise the REST APIs for Synapse and Azure SQL:
-
+<pre><code>
  https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api
  https://docs.microsoft.com/en-us/rest/api/sql/
-
+</code></pre>
 so you are not restricted to using Data Factory; you can execute these commands via the tools or application of your choice.
 
 ## Step 0: Parameter setup in your pipeline
-The examples below are parameter driven, which will allow you to create a generic pipeline that you can use across multiple subscriptions, resource groups, SQL servers and/or Database instances (SQL pools). These are setup in your Azure pipeline under parameters
- 
+The examples below are parameter driven, which will allow you to create a generic pipeline that you can use across multiple subscriptions, resource groups, SQL servers and/or Database instances (SQL pools). These are setup in your Azure pipeline under parameters:
+
+![](images/parameter-setup.png)
+
+
 
 ## Step 1: Identify the list of databases (SQL pools) in your SQL server instance
 This requires a Web Activity that calls the Databases - List By Server REST API request:
+![](images/list-of-databases.png)
  
 This is a simple Get request using the following call:
-GET https://management.azure.com/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.Sql/servers/{server-name}/databases?api-version=2017-10-01-preview
+
+<pre><code>GET https://management.azure.com/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.Sql/servers/{server-name}/databases?api-version=2017-10-01-preview
+</code></pre>
+
 Which in the example above I have parameterised using the @concat string function:
-@concat('https://management.azure.com/subscriptions/',pipeline().parameters.Subscription,'/resourceGroups/',pipeline().parameters.ResourceGroup,'/providers/Microsoft.Sql/servers/',pipeline().parameters.ServerName,'/databases?api-version=2017-10-01-preview')
+
+<pre><code>@concat('https://management.azure.com/subscriptions/',pipeline().parameters.Subscription,'/resourceGroups/',pipeline().parameters.ResourceGroup,'/providers/Microsoft.Sql/servers/',pipeline().parameters.ServerName,'/databases?api-version=2017-10-01-preview')
+</code></pre>
+
 The output is a JSON string that contains a list of the database instances in the SQL server named above. This is passed to the next activity.
 
 ## Step 2: Filter the list to remove any irrelevant databases
 This requires a Filer Activity that filters based on the values passed from the DBList1 Activity.
+![](images/filter-activity.png)
  
 In this example, we are simply extracting the records from the array that are not named “master”. Other conditions could be applied as required, such as filtering on the sku/name of “DataWarehouse” to ensure only valid Synapse SQL pools are identified.
-Here the command under Item is: @activity('DBList1').output.value where DBList1 is the name of the preceding Web activity
-The command under Condition is: @not(startswith(item().name,'master'))
+
+Here the command under Item is: 
+> @activity('DBList1').output.value
+
+where DBList1 is the name of the preceding Web activity
+
+The command under Condition is: 
+> @not(startswith(item().name,'master'))
+
 The remaining records in the array are then passed to the next activity.
 
 ## Step 3: Loop over each record/database
 Create a ForEach activity to loop over each database where the full pipeline with the above activities are being run. 
- 
+![](images/loop-over1.png) 
+
 Alternatively, if you are simply running this for a single database, complete Step 0 and follow the next steps.
- 
+![](images/loop-single.png) 
+
 ### Step 3a: Check the state of the database
-This requires a Web Activity, similar to Step1. This activity calls the Check database state REST API for Azure Synapse https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api#check-database-state:
- 
+This requires a Web Activity, similar to Step1. This activity calls the Check database state REST API for Azure Synapse:
+<pre><code>https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api#check-database-state
+</code></pre>
+![](images/check-state.png) 
+
 This again uses a simple Get request using the following call:
 GET https://management.azure.com/subscriptions/{subscription-id}/resourceGroups/{resource-group-name}/providers/Microsoft.Sql/servers/{server-name}/databases/{database-name}?api-version=2014-04-01 HTTP/1.1
 Which in the example above I have parameterised using the @concat string function:
@@ -67,6 +90,7 @@ Create an If Condition activity and use this to evaluate the status from the pre
  
 An If Condition activity requires a Boolean output, so in this example we are using the startswith function that returns true or false:
 @startswith(activity('CheckState').output.properties.status,'Paused') 
+
 where CheckState is the name of the preceding Web activity
 This is simply doing a check of the status – if it is paused it invokes the true activity (Restart) within the If Condition, if not it invokes the false activity (Pause).
 Within the appropriate activity branch add the final step.
