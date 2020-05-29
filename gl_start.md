@@ -120,11 +120,11 @@ Which in the example above I have parameterised using the @concat string functio
 </code></pre> 
 In this case we are using activity('CheckState').output.name – the name of the SQL pool from Step 3a – that that was passed to this activity through the IF Condition loop. If you are using this a single activity against a single database, you could embed the name of your Synapse SQL pool here, or use a parameter from the pipeline (e.g. pipeline().parameters.DatabaseName using the example in Step 0).
 
-### Data Factory Output
+## Data Factory Output
 When the full pipeline described above is run, this is the output you will receive. Note that when I ran the pipeline for the results below, one of the SQL pools was already running (so initiated a Pause event), while the other was Paused so initiated a Restart.
 ![](images/output.png) 
 
-#### Important Authentication notes:
+## Important Authentication notes:
 For all of the Web Activities / REST API Web calls, you need to ensure that Data Factory is Authenticated against the SQL server. Managed Identity is required to run these REST API calls: 
 
   https://docs.microsoft.com/en-us/azure/data-factory/control-flow-web-activity#managed-identity
