@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The process below describes one way to automate the pausing and restarting of Synapse SQL pools (previously known as SQL DW instances), using Azure Data Factory. While there are many ways of doing this, most examples seem to be overly complicated for what should be a simple process. Also, it makes sense to include this as part of any existing data orchestration process, which typically means it need to be implemented in Data Factory. Thus, this demo will show how easy it is to implement this in Data Factory and take you through the steps required.
+The process below describes one way to automate the pausing and restarting of Synapse SQL pools (previously known as SQL DW instances), using Azure Data Factory. While there are many ways of doing this, most examples seem to be overly complicated for what should be a simple process. Also, it makes sense to include this as part of any existing data orchestration process, which typically means it need to be implemented in Data Factory. Thus, this example will show how easy it is to implement this in Data Factory and take you through the steps required.
 
 The process I will describe below goes through a set of steps:
 <ol start="1">
