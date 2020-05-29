@@ -131,9 +131,8 @@ For all of the Web Activities / REST API Web calls, you need to ensure that Data
 
 Further details on Managed Identity for Data Factory, and how the Data Factory’s Managed Identity is added to your SQL Server can be found here:
 
-  https://docs.microsoft.com/en-us/azure/data-factory/data-factory-service-identity
-  
-  https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal
-  
-  https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
+https://docs.microsoft.com/en-us/azure/data-factory/data-factory-service-identity
 
+https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal
+
+https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
