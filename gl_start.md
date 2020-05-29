@@ -2,7 +2,8 @@
 
 ## Introduction
 
-The process below describes one way to automate the pausing and restarting of Synapse SQL pools (previously known as SQL DW instances), using Azure Data Factory. While there are many ways of doing this, most examples seem to be overly complicated for what should be a simple process. Also, it makes sense to include this as part of any existing data orchestration process, which typically means it need to be implemented in Data Factory. Thus, this blog will show how easy it is to implement this in Data Factory and take you through the steps required.
+The process below describes one way to automate the pausing and restarting of Synapse SQL pools (previously known as SQL DW instances), using Azure Data Factory. While there are many ways of doing this, most examples seem to be overly complicated for what should be a simple process. Also, it makes sense to include this as part of any existing data orchestration process, which typically means it need to be implemented in Data Factory. Thus, this demo will show how easy it is to implement this in Data Factory and take you through the steps required.
+
 The process I will describe below goes through a set of steps:
 <ol start="1">
 <li>Identify the list of databases (SQL pools) in your SQL server instance</li>
@@ -20,10 +21,11 @@ This requires a simple pipeline in Data Factory:
 Depending upon the nature of your environment, the whole process described here may not apply and you may just want to pick and choose the appropriate step. Typically the process described here would be used to Pause or Restart all instances in a Development, Test or PoC environment – where the number of instances could vary over time – whereas for a live environment you are more likely to schedule Pause/Restart on a instance by instance basis so will only need step 3.
 
 All of the steps above utilise the REST APIs for Synapse and Azure SQL:
-<pre><code>
+
  https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api
+ 
  https://docs.microsoft.com/en-us/rest/api/sql/
-</code></pre>
+
 so you are not restricted to using Data Factory; you can execute these commands via the tools or application of your choice.
 
 ## Step 0: Parameter setup in your pipeline
@@ -70,12 +72,12 @@ Create a ForEach activity to loop over each database where the full pipeline wit
 ![](images/loop-over1.png) 
 
 Alternatively, if you are simply running this for a single database, complete Step 0 and follow the next steps.
-![](images/loop-single.png) 
 
 ### Step 3a: Check the state of the database
 This requires a Web Activity, similar to Step1. This activity calls the Check database state REST API for Azure Synapse:
-<pre><code>https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api#check-database-state
-</code></pre>
+
+  https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api#check-database-state
+
 ![](images/check-state.png) 
 
 This again uses a simple Get request using the following call:
@@ -103,8 +105,9 @@ Within the appropriate activity branch add the final step.
 
 ### Step 3c: – Synapse Pause or Restart
 The final step (and this may be the only relevant step for some requirements), is to initiate the Pause or Restart of your Synapse SQL pool. This, like steps 1 and 3a, is a simple Web activity, calling the Pause or Resume compute REST API for Azure Synapse 
-<pre><code>https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api#pause-compute:
-</code></pre> 
+
+  https://docs.microsoft.com/en-us/azure/synapse-analytics/sql-data-warehouse/sql-data-warehouse-manage-compute-rest-api#pause-compute:
+
 ![](images/resume.png) 
 
 The example here is to resume a SQL pool, invoking a POST request using the following call:
@@ -121,12 +124,16 @@ When the full pipeline described above is run, this is the output you will recei
 
 #### Important Authentication notes:
 For all of the Web Activities / REST API Web calls, you need to ensure that Data Factory is Authenticated against the SQL server. Managed Identity is required to run these REST API calls: 
-<pre><code>https://docs.microsoft.com/en-us/azure/data-factory/control-flow-web-activity#managed-identity
-</code></pre> 
+
+  https://docs.microsoft.com/en-us/azure/data-factory/control-flow-web-activity#managed-identity
+
 ![](images/authentication.png) 
 
 Further details on Managed Identity for Data Factory, and how the Data Factory’s Managed Identity is added to your SQL Server can be found here:
-<pre><code>https://docs.microsoft.com/en-us/azure/data-factory/data-factory-service-identity
-https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal
-https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
-</code></pre> 
+
+  https://docs.microsoft.com/en-us/azure/data-factory/data-factory-service-identity
+  
+  https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal
+  
+  https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles
+
